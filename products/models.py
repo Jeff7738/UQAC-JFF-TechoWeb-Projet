@@ -2,7 +2,7 @@ import os
 
 import click
 from flask.cli import with_appcontext
-from peewee import Model, SqliteDatabase, TextField, CharField, FloatField, IntegerField,BooleanField
+from peewee import Model, SqliteDatabase, TextField, CharField, FloatField, IntegerField,BooleanField,AutoField,ForeignKeyField
 import requests
 
 def get_db_path():
@@ -13,7 +13,7 @@ class BaseModel(Model):
         database = SqliteDatabase(get_db_path())
 
 class Product(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = AutoField(primary_key=True)
     name = CharField()
     description = TextField()
     price = FloatField()
@@ -21,13 +21,26 @@ class Product(BaseModel):
     image = CharField()
     weight = IntegerField()
 
+class Order(BaseModel):
+    id = AutoField(primary_key=True)
+    total_price = FloatField(null=True)
+    total_price_tax = FloatField(null=True)
+    email = TextField(null=True)
+    credit_card = TextField(null=True)
+    shipping_information = TextField(null=True)
+    paid = BooleanField(null=True)
+    transaction = TextField(null=True)
+    product = ForeignKeyField(Product, backref='orders')
+    quantity = IntegerField()
+    shipping_price = IntegerField(null=True)
+
 
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
     database = SqliteDatabase(get_db_path())
     database.connect()
-    database.create_tables([Product])
+    database.create_tables([Product,Order])
     database.close()
     r = requests.get('http://dimensweb.uqac.ca/~jgnault/shops/products/')
     data = r.json()
@@ -43,7 +56,7 @@ def init_db_command():
                 image=p['image'],
                 weight=p['weight']
             )
-    click.echo('Database initialized with products')
+    click.echo('Database initialized with products && Order table create')
 
 def init_app(app):
     app.cli.add_command(init_db_command)
