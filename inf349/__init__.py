@@ -1,11 +1,9 @@
-import os
+from flask import Flask, jsonify, request, redirect, url_for
 
+from inf349 import controller
+from inf349.models import init_app,Product,Order
+from inf349.services import OrderServices
 from peewee import DoesNotExist
-from flask import Flask, jsonify, request, redirect, url_for, abort
-
-from products import controller
-from products.models import init_app,Product,Order
-from products.services import OrderServices
 
 def create_app(initial_config=None):
     app = Flask("products")
@@ -48,7 +46,7 @@ def create_app(initial_config=None):
         location_url = url_for('create_order', order_id=order.id)
         return redirect(location_url, code=302)
     
-    # TODO exigences get + tests
+    # TODO exigences get et format + tests
     @app.route('/order/<int:order_id>', methods=['GET'])
     def get_order(order_id):
         try:

@@ -1,24 +1,23 @@
-# import sys
-# import os
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import os
+import tempfile
+import pytest
+from peewee import SqliteDatabase
 
+os.environ['DATABASE'] = ":memory:"
 
-# import pytest
-# from products.models import Product, get_db_path
-# from inf349 import create_app
-# from peewee import SqliteDatabase
+from inf349 import create_app
+from inf349.models import Product, Order,get_db_path
 
-# @pytest.fixture
-# def app():
+@pytest.fixture
+def app():
+    app = create_app({"TESTING": True})
+    database = SqliteDatabase(get_db_path())
+    database.create_tables([Product, Order])
 
-#     app = create_app({"TESTING": True})
+    yield app
 
-#     database = SqliteDatabase(get_db_path())
-#     database.create_tables(Product)
+    database.drop_tables([Product, Order])
 
-#     yield app
-#     database.drop_tables([Product])
-
-# @pytest.fixture
-# def client(app):
-#     return app.test_client()
+@pytest.fixture
+def client(app):
+    return app.test_client()

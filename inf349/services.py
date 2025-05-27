@@ -1,4 +1,4 @@
-from products.models import Order, Product
+from inf349.models import Order, Product
 
 class OrderServices:
     @classmethod

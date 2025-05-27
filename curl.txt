@@ -1,0 +1,3 @@
+là pour des tests avec des curls : 
+
+curl -X POST http://localhost:5000/order   -H "Content-Type: application/json"   -d '{"product": {"id": 1, "quantity": 2}}' -i
