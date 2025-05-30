@@ -8,3 +8,6 @@ Pour lancer le projet :
 
 Pour lancer les tests : 
 - python -m pytest tests/*             // Un test peut être lancé séparement, tests_integration à la place *
+
+Pour information je suis sur une distribution linux
+Le curl.txt c'est pour tester en cmd :) . Il regroupe des commandes

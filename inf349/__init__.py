@@ -46,20 +46,83 @@ def create_app(initial_config=None):
         location_url = url_for('create_order', order_id=order.id)
         return redirect(location_url, code=302)
     
-    # TODO exigences get et format + tests
+    # TODO tests
     @app.route('/order/<int:order_id>', methods=['GET'])
     def get_order(order_id):
         try:
             order = Order.get(Order.id == order_id)
+            total_price = OrderServices.calculate_total_price(order.product.price, order.quantity)
+            shipping_price = OrderServices.calculate_shipping_price(order.product.weight * order.quantity)
+            # TODO en fonction de la province dans shipping information
+            total_price_tax = OrderServices.calculate_total_price_tax(total_price, order.quantity)
             return jsonify({
             "order_id": order.id,
+            "total_price": total_price,
+            "total_price_tax": total_price_tax,
+            "credit_card": order.credit_card or {},
+            "email": order.client.email if order.client else None,
+            "shipping_information": {
+                "country": order.client.country,
+                "address": order.client.address,
+                "postal_code": order.client.postal_code,
+                "city": order.client.city,
+                "province": order.client.province
+            } if order.client else {},
+            "paid": order.paid,
+            "transaction": order.transaction or {},
             "product": {
                 "id": order.product.id,
-                "quantity": order.quantity
-            }
+                "quantity": order.quantity,
+            },
+            "shipping_price": shipping_price
             })
         except Order.DoesNotExist:
             return jsonify({"error": "Order not found"}), 404
+        
+    # TODO tests 
+    @app.route('/order/<int:order_id>', methods=['PUT'])
+    def update_order(order_id):
+        data = request.get_json()
+
+        valid, result = controller.validate_order_update_informations(data)
+        if not valid:
+            return jsonify({"errors": result}), 422
+
+        email = result["email"]
+        shipping_info = result["shipping_information"]
+
+        try:
+            order = Order.get_by_id(order_id)
+        except Order.DoesNotExist:
+            return jsonify({"error": "Order not found"}), 404
+
+        client = OrderServices.create_client(email, shipping_info)
+        OrderServices.update_order_customer_info(order_id, client)
+
+        return jsonify({
+            "order": {
+                "id": order.id,
+                "email": client.email,
+                "shipping_information": {
+                    "country": client.country,
+                    "address": client.address,
+                    "postal_code": client.postal_code,
+                    "city": client.city,
+                    "province": client.province
+                },
+                "credit_card": order.credit_card or {},
+                "transaction": order.transaction or {},
+                "paid": order.paid,
+                "product": {
+                    "id": order.product.id,
+                    "quantity": order.quantity
+                },
+                "total_price": order.total_price,
+                "total_price_tax": order.total_price_tax,
+                "shipping_price": order.shipping_price
+            }
+        }), 200
+
 
     return app
 

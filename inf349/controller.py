@@ -47,3 +47,30 @@ def check_inventory(product_id):
                 }
             }
         }
+    
+def validate_order_update_informations(informations):
+    errors = {
+        "order": {
+            "code": "missing-fields",
+            "name": "Il manque un ou plusieurs champs qui sont obligatoires"
+        }
+    }
+
+    if not informations or "order" not in informations:
+        return False, errors
+
+    order_data = informations["order"]
+    required_fields = ["email", "shipping_information"]
+    shipping_required_fields = ["country", "address", "postal_code", "city", "province"]
+
+    for field in required_fields:
+        if field not in order_data:
+            return False, errors
+
+    shipping_info = order_data.get("shipping_information", {})
+    for field in shipping_required_fields:
+        if field not in shipping_info:
+            return False, errors
+
+    return True, order_data
+

@@ -1,3 +1,16 @@
 là pour des tests avec des curls : 
 
 curl -X POST http://localhost:5000/order   -H "Content-Type: application/json"   -d '{"product": {"id": 1, "quantity": 2}}' -i
+
+curl -X PUT http://localhost:5000/order/8   -H "Content-Type: application/json"   -d '{
+    "order": {
+      "email": "jgnault@uqac.ca",
+      "shipping_information": {
+        "country": "Canada",
+        "address": "201, rue Président-Kennedy",
+        "postal_code": "G7X 3Y7",
+        "city": "Chicoutimi",
+        "province": "QC"
+      }
+    }
+  }' -i

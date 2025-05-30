@@ -21,6 +21,15 @@ class Product(BaseModel):
     image = CharField()
     weight = IntegerField()
 
+class Client(BaseModel):
+    id = AutoField(primary_key=True)
+    email = TextField()
+    country = TextField()
+    address = TextField()
+    postal_code = TextField()
+    city = CharField()
+    province = CharField()
+
 class Order(BaseModel):
     id = AutoField(primary_key=True)
     total_price = FloatField(null=True)
@@ -28,9 +37,10 @@ class Order(BaseModel):
     email = TextField(null=True)
     credit_card = TextField(null=True)
     shipping_information = TextField(null=True)
-    paid = BooleanField(null=True)
+    paid = BooleanField(default=False)
     transaction = TextField(null=True)
     product = ForeignKeyField(Product, backref='orders')
+    client = ForeignKeyField(Client, null=True, backref='orders')
     quantity = IntegerField()
     shipping_price = IntegerField(null=True)
 
@@ -40,7 +50,7 @@ class Order(BaseModel):
 def init_db_command():
     database = SqliteDatabase(get_db_path())
     database.connect()
-    database.create_tables([Product,Order])
+    database.create_tables([Product,Order,Client])
     database.close()
     r = requests.get('http://dimensweb.uqac.ca/~jgnault/shops/products/')
     data = r.json()
@@ -56,7 +66,7 @@ def init_db_command():
                 image=p['image'],
                 weight=p['weight']
             )
-    click.echo('Database initialized with products && Order table create')
+    click.echo('Database initialized with products && other table created')
 
 def init_app(app):
     app.cli.add_command(init_db_command)
